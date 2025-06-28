@@ -1,52 +1,66 @@
-import os
-import subprocess
-from datetime import datetime
+BHZ Ultra Killer v2 - Python Script for Termux
 
-# 📁 Folder prepare
-os.makedirs("input", exist_ok=True)
-os.makedirs("output", exist_ok=True)
+Author: Manik Ahmed
 
-print("🎬 BHZ Ultra Copyright Killer")
-videofile = input("🎞️ ভিডিও ফাইল নাম দিন (input ফোল্ডারে রাখুন): ")
-musicfile = input("🎵 ব্যাকগ্রাউন্ড মিউজিক ফাইল দিন (input ফোল্ডারে): ")
+Purpose: Advanced Copyright Remover
 
-invid = f"input/{videofile}"
-inmus = f"input/{musicfile}"
-timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-outvid = f"output/ultra_safe_{videofile.split('.')[0]}_{timestamp}.mp4"
+import os import time from moviepy.editor import * from pydub import AudioSegment import shutil
 
-# 💥 Advanced FFmpeg Command
-command = [
-    "ffmpeg",
-    "-y",
-    "-i", invid,
-    "-i", inmus,
-    "-filter_complex",
-    "[0:v]scale=1280:720,setpts=PTS-STARTPTS,eq=brightness=0.04:saturation=1.2,"
-    "zoompan=z='if(lte(zoom,1.0),1.001,zoom+0.001)':d=1:x='iw/2':y='ih/2',"
-    "drawbox=x=30:y=30:w=250:h=80:color=black@0.3:t=fill[vid];"
-    "[1:a]volume=0.3,asetrate=44100*0.97,atempo=1.04,"
-    "aecho=0.8:0.88:60:0.4,firequalizer=gain_entry='entry(0,-25);entry(250,-13);entry(6000,5)',"
-    "highpass=f=200,lowpass=f=800[aud]",
-    "-map", "[vid]",
-    "-map", "[aud]",
-    "-c:v", "libx264",
-    "-c:a", "aac",
-    "-b:v", "1400k",
-    "-b:a", "128k",
-    "-preset", "ultrafast",
-    "-crf", "27",
-    "-shortest",
-    "-metadata", "title=",
-    "-metadata", "artist=",
-    "-metadata", "comment=",
-    "-metadata", "composer=",
-    "-metadata", "encoded_by=",
-    "-metadata", "publisher=",
-    outvid
-]
+Terminal banner
 
-print("\n⏳ প্রক্রিয়া চলছে... কিছু সময় লাগবে...")
-subprocess.run(command)
+os.system("clear") os.system("termux-open-url https://github.com/Manikxhmed99") print(""" \033[1;32m
 
-print(f"\n✅ সফলভাবে তৈরি: {outvid}")
+
+---
+
+|  _ | | | |  | | |  | () |    () |   () |   | |
+| |) | || | |__    | |  | || |     | |_  | | _| | ___ _ __ |  _ <|  _  |  |   | |  | | | |    | | ' | | |/ _` |/ _ \ '| | |) | | | | |____  | || | | || | | | | | | (| |  __/ |
+|/|| |||  _/||||| ||||_,|___|_|
+\033[0m
+
+BHZ ULTRA KILLER V2 | ADMIN: MANIK AHMED
+   --------------------------------------------------
+
+""")
+
+Folder setup
+
+INPUT_DIR = "input" OUTPUT_DIR = "output" os.makedirs(INPUT_DIR, exist_ok=True) os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+Ask for input filename
+
+file = input("Enter filename from 'input/' folder (example.mp4): ") input_path = os.path.join(INPUT_DIR, file) output_path = os.path.join(OUTPUT_DIR, "edited_" + file)
+
+if not os.path.isfile(input_path): print("\033[1;31m[!] File not found in input folder. Please try again.\033[0m") exit()
+
+print("\033[1;34m[*] Processing...\033[0m")
+
+Step 1: Load video
+
+video = VideoFileClip(input_path) video = video.fx(vfx.lum_contrast, 0.1, 30, 255)  # brightness and contrast change video = video.resize(height=480)  # resize to 480p
+
+Step 2: Modify audio
+
+if video.audio: audio = video.audio audio_path = "temp_audio.mp3" final_audio_path = "temp_pitch.mp3" audio.write_audiofile(audio_path, verbose=False, logger=None)
+
+# Use pydub to change pitch
+sound = AudioSegment.from_file(audio_path)
+pitched = sound._spawn(sound.raw_data, overrides={"frame_rate": int(sound.frame_rate * 1.1)})
+pitched.export(final_audio_path, format="mp3")
+
+video = video.set_audio(AudioFileClip(final_audio_path))
+
+Step 3: Watermark
+
+watermark_text = TextClip("BHZ Secure", fontsize=24, color='white') watermark_text = watermark_text.set_pos(('right', 'bottom')).set_duration(video.duration) final_video = CompositeVideoClip([video, watermark_text])
+
+Step 4: Export
+
+final_video.write_videofile(output_path, codec="libx264", audio_codec="aac")
+
+Clean up
+
+if os.path.exists("temp_audio.mp3"): os.remove("temp_audio.mp3") if os.path.exists("temp_pitch.mp3"): os.remove("temp_pitch.mp3")
+
+print("\033[1;32m[✓] Done! Output saved to 'output/' folder.\033[0m")
+
