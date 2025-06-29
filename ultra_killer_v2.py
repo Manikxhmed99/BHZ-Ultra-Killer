@@ -1,83 +1,48 @@
-import os
-import time
+#!/usr/bin/env python3 import os import subprocess import time from termcolor import cprint
 
-# Color codes
-G = "\033[1;32m"  # Green
-R = "\033[1;31m"  # Red
-Y = "\033[1;33m"  # Yellow
-B = "\033[1;34m"  # Blue
-C = "\033[1;36m"  # Cyan
-M = "\033[1;35m"  # Magenta
-RESET = "\033[0m"
+🔥 Colorful Banner
 
-def typewrite(text, delay=0.01):
-    for char in text:
-        print(char, end='', flush=True)
-        time.sleep(delay)
-    print()
+def banner(): os.system("clear") banner_lines = [ "\n", "\033[1;32m██████╗ ██████╗ ██╗\033[0m", "\033[1;32m██╔══██╗██╔══██╗██║\033[0m", "\033[1;32m██████╔╝██████╔╝██║\033[0m", "\033[1;32m██╔═══╝ ██╔═══╝ ██║\033[0m", "\033[1;32m██║     ██║     ██║\033[0m", "\033[1;32m╚═╝     ╚═╝     ╚═╝\033[0m", "\033[1;34m🔥 BHZ - COPYRIGHT KILLER TOOL\033[0m", "\033[1;34m👑 ADMIN: MANIK AHMED\033[0m", "\033[1;30m====================================\033[0m\n" ] for line in banner_lines: print(line) time.sleep(0.1)
 
-def banner():
-    os.system("clear")
-    print(G)
-    typewrite("╔══════════════════════════════════════════════╗", 0.002)
-    typewrite("║         🔥 BHZ ULTRA COPYRIGHT KILLER        ║", 0.005)
-    typewrite("║            ADMIN: MD MANIK AHMED             ║", 0.005)
-    typewrite("╚══════════════════════════════════════════════╝", 0.002)
-    print(RESET)
+🧠 Auto process all videos in input/
 
-def ensure_folders():
-    os.makedirs("input", exist_ok=True)
-    os.makedirs("output", exist_ok=True)
+def process_all_videos(): input_folder = "input" output_folder = "output"
 
-def get_inputs():
-    print(f"{C}📥 Enter your video filename (inside 'input/'): {RESET}")
-    video = input("🎞️ Filename: ")
-    print(f"{C}🎵 Optional background music (inside 'input/') or press Enter: {RESET}")
-    music = input("🎧 Music File: ")
-    return f"input/{video}", (f"input/{music}" if music else ""), f"output/safe_{video}"
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
-def process_video(video_in, music_in, video_out):
-    print(f"\n{B}🔄 Processing your video with ultra filters... Please wait...{RESET}\n")
+files = os.listdir(input_folder)
+video_files = [f for f in files if f.lower().endswith((".mp4", ".mkv", ".mov", ".avi"))]
 
-    video_filter = (
-        f'-vf "scale=1280:720,eq=brightness=0.08:saturation=1.4:contrast=1.1" '
-        f'-af "asetrate=44100*1.04,atempo=1.08,volume=1.2" '
-    )
+if not video_files:
+    cprint("\n⚠️ No videos found in 'input/' folder!", "red")
+    return
 
-    if music_in:
-        filter_complex = (
-            f'-i "{video_in}" -i "{music_in}" '
-            f'-filter_complex "[0:a]volume=1.0[a0];[1:a]volume=0.5[a1];[a0][a1]amix=inputs=2:duration=shortest[a]" '
-            f'-map 0:v -map "[a]"'
-        )
-    else:
-        filter_complex = f'-i "{video_in}"'
+total = len(video_files)
 
-    cmd = (
-        f'ffmpeg -y {filter_complex} '
-        f'{video_filter} '
-        f'-map_metadata -1 '
-        f'-metadata title="" -metadata artist="" -metadata comment="" '
-        f'-c:v libx264 -c:a aac -preset ultrafast -crf 28 "{video_out}"'
-    )
+for i, file in enumerate(video_files):
+    input_path = os.path.join(input_folder, file)
+    output_path = os.path.join(output_folder, f"edited_{file}")
 
-    os.system(cmd)
-    print(f"\n{G}✅ Successfully processed!\n📁 Output saved to: {Y}{video_out}{RESET}\n")
+    percent = int(((i + 1) / total) * 100)
+    cprint(f"\n🎬 Editing: {file}  [{percent}% done]", "cyan")
+    time.sleep(1)
 
-def main():
-    banner()
-    ensure_folders()
-    video_in, music_in, video_out = get_inputs()
+    cmd = [
+        "ffmpeg", "-i", input_path,
+        "-vf", "scale=1280:720,eq=contrast=1.2:brightness=0.06:saturation=1.3,hue=s=0.8,drawbox=x=10:y=10:w=100:h=60:color=black@0.3:t=fill",
+        "-af", "asetrate=44100*1.04,atempo=1.05,volume=0.8,highpass=f=200,lowpass=f=3000",
+        "-metadata", "title=", "-metadata", "comment=", "-metadata", "author=",
+        "-map_metadata", "-1",
+        "-c:v", "libx264", "-c:a", "aac", "-crf", "28",
+        output_path, "-y"
+    ]
 
-    if not os.path.exists(video_in):
-        print(f"{R}[✘] Error: Video file not found in 'input/' folder.{RESET}")
-        return
+    subprocess.run(cmd)
+    cprint(f"✅ Saved: {output_path}", "green")
 
-    if music_in and not os.path.exists(music_in):
-        print(f"{Y}[!] Warning: Music file not found. Proceeding without music...{RESET}")
-        music_in = ""
+cprint("\n🎉 All videos processed successfully!", "yellow", attrs=["bold"])
 
-    process_video(video_in, music_in, video_out)
+🚀 Run Script
 
-if __name__ == "__main__":
-    main()
+if name == "main": banner() process_all_videos()
