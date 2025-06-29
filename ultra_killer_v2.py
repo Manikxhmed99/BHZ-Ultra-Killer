@@ -1,66 +1,51 @@
-BHZ Ultra Killer v2 - Python Script for Termux
+# BHZ Ultra Killer v2 - Python Script for Termux
+# Admin: Md Manik Ahmed
 
-Author: Manik Ahmed
+import os
+import subprocess
+import time
 
-Purpose: Advanced Copyright Remover
+def banner():
+    os.system("clear")
+    print("\033[1;32m")
+    print("██████╗ ██╗  ██╗███████╗    ██╗   ██╗██╗     ██████╗ ██████╗  █████╗")
+    print("██╔══██╗██║  ██║██╔════╝    ██║   ██║██║     ██╔══██╗██╔══██╗██╔══██╗")
+    print("██████╔╝███████║█████╗      ██║   ██║██║     ██████╔╝██████╔╝███████║")
+    print("██╔═══╝ ██╔══██║██╔══╝      ╚██╗ ██╔╝██║     ██╔═══╝ ██╔═══╝ ██╔══██║")
+    print("██║     ██║  ██║███████╗     ╚████╔╝ ███████╗██║     ██║     ██║  ██║")
+    print("╚═╝     ╚═╝  ╚═╝╚══════╝      ╚═══╝  ╚══════╝╚═╝     ╚═╝     ╚═╝  ╚═╝")
+    print("\n\033[1;31m         ⚠️ BHZ Ultra Copyright Killer Loaded ⚠️")
+    print("\033[0m")
 
-import os import time from moviepy.editor import * from pydub import AudioSegment import shutil
+def process_video(input_path, output_path):
+    print("\033[1;36m[•] Processing video for copyright bypass...\033[0m")
+    try:
+        # Modify video using ffmpeg to bypass copyright
+        command = [
+            "ffmpeg",
+            "-i", input_path,
+            "-vf", "scale=1280:720,hue=s=0,eq=brightness=0.06:saturation=1.2",
+            "-af", "asetrate=44100*1.05,aresample=44100,atempo=1.1",
+            "-metadata", "title=Custom",
+            "-metadata", "author=BHZ-ADMIN",
+            "-preset", "ultrafast",
+            output_path
+        ]
+        subprocess.run(command, check=True)
+        print("\033[1;32m[✔] Video processed and saved to:", output_path, "\033[0m")
+    except subprocess.CalledProcessError:
+        print("\033[1;31m[✘] Failed to process the video. Check if ffmpeg is installed.\033[0m")
 
-Terminal banner
+def main():
+    banner()
+    input_path = input("\033[1;34m[📥] Enter input video path (e.g., input/video.mp4): \033[0m")
+    output_path = input("\033[1;35m[📤] Enter output path (e.g., output/video-edited.mp4): \033[0m")
 
-os.system("clear") os.system("termux-open-url https://github.com/Manikxhmed99") print(""" \033[1;32m
+    if not os.path.exists(input_path):
+        print("\033[1;31m[✘] Input file not found!\033[0m")
+        return
 
+    process_video(input_path, output_path)
 
----
-
-|  _ | | | |  | | |  | () |    () |   () |   | |
-| |) | || | |__    | |  | || |     | |_  | | _| | ___ _ __ |  _ <|  _  |  |   | |  | | | |    | | ' | | |/ _` |/ _ \ '| | |) | | | | |____  | || | | || | | | | | | (| |  __/ |
-|/|| |||  _/||||| ||||_,|___|_|
-\033[0m
-
-BHZ ULTRA KILLER V2 | ADMIN: MANIK AHMED
-   --------------------------------------------------
-
-""")
-
-Folder setup
-
-INPUT_DIR = "input" OUTPUT_DIR = "output" os.makedirs(INPUT_DIR, exist_ok=True) os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-Ask for input filename
-
-file = input("Enter filename from 'input/' folder (example.mp4): ") input_path = os.path.join(INPUT_DIR, file) output_path = os.path.join(OUTPUT_DIR, "edited_" + file)
-
-if not os.path.isfile(input_path): print("\033[1;31m[!] File not found in input folder. Please try again.\033[0m") exit()
-
-print("\033[1;34m[*] Processing...\033[0m")
-
-Step 1: Load video
-
-video = VideoFileClip(input_path) video = video.fx(vfx.lum_contrast, 0.1, 30, 255)  # brightness and contrast change video = video.resize(height=480)  # resize to 480p
-
-Step 2: Modify audio
-
-if video.audio: audio = video.audio audio_path = "temp_audio.mp3" final_audio_path = "temp_pitch.mp3" audio.write_audiofile(audio_path, verbose=False, logger=None)
-
-# Use pydub to change pitch
-sound = AudioSegment.from_file(audio_path)
-pitched = sound._spawn(sound.raw_data, overrides={"frame_rate": int(sound.frame_rate * 1.1)})
-pitched.export(final_audio_path, format="mp3")
-
-video = video.set_audio(AudioFileClip(final_audio_path))
-
-Step 3: Watermark
-
-watermark_text = TextClip("BHZ Secure", fontsize=24, color='white') watermark_text = watermark_text.set_pos(('right', 'bottom')).set_duration(video.duration) final_video = CompositeVideoClip([video, watermark_text])
-
-Step 4: Export
-
-final_video.write_videofile(output_path, codec="libx264", audio_codec="aac")
-
-Clean up
-
-if os.path.exists("temp_audio.mp3"): os.remove("temp_audio.mp3") if os.path.exists("temp_pitch.mp3"): os.remove("temp_pitch.mp3")
-
-print("\033[1;32m[✓] Done! Output saved to 'output/' folder.\033[0m")
-
+if __name__ == "__main__":
+    main()
